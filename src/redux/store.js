@@ -4,10 +4,10 @@ import {
   createReducer,
   getDefaultMiddleware,
 } from '@reduxjs/toolkit';
+import axios from 'axios';
 import logger from 'redux-logger';
 import {
   persistStore,
-  persistReducer,
   FLUSH,
   REHYDRATE,
   PAUSE,
@@ -16,60 +16,80 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import { addContact, removeContact, filterContacts } from './actions';
+import {
+  filterContacts,
+  addContactError,
+  addContactSuccess,
+  addContactRequest,
+  removeContactError,
+  removeContactRequest,
+  removeContactSuccess,
+  fetchContactsError,
+  fetchContactsRequest,
+  fetchContactsSuccess,
+} from './actions';
 
-const persistConfig = {
-  key: 'Contacts',
-  storage,
-};
+// const contactsReducer = createReducer(
+//   {
+//     items: [],
+//     filter: '',
+//   },
+//   {
+//     [addContactSuccess]: (state, { payload }) => doesExist(state, payload),
+//     [removeContactSuccess]: (state, { payload }) => ({
+//       ...state,
+//       items: state.items.filter(({ id }) => id !== payload),
+//     }),
 
-const contactsReducer = createReducer(
-  {
-    items: [],
-    filter: '',
-  },
-  {
-    [addContact]: (state, { payload }) => doesExist(state, payload),
-    [removeContact]: (state, { payload }) => ({
-      items: [...state.items.filter(i => i.id !== payload)],
-    }),
+//     [filterContacts]: (state, { payload }) => ({
+//       ...state,
+//       filter: payload,
+//     }),
+//   },
+// );
 
-    [filterContacts]: (state, { payload }) => ({
-      ...state,
-      filter: payload,
-    }),
-  },
-);
+const itemsReducer = createReducer([], {
+  [fetchContactsSuccess]: (state, { payload }) => payload,
+  [addContactSuccess]: (state, { payload }) => doesExist(state, payload),
+  [removeContactSuccess]: (state, { payload }) =>
+    state.filter(({ id }) => id !== Number(payload)),
+});
 
-// const itemsReducer = createReducer([], {
-//   [addContact]: (state, { payload }) => doesExist(state, payload),
-//   [removeContact]: (state, { payload }) => [
-//     ...state.filter(i => i.id !== payload),
-//   ],
-// });
+const filterReducer = createReducer('', {
+  [filterContacts]: (_, { payload }) => payload,
+});
 
-// const filterReducer = createReducer('', {
-//   [filterContacts]: (_, { payload }) => payload,
-// });
+const loading = createReducer(false, {
+  [addContactRequest]: () => true,
+  [addContactSuccess]: () => false,
+  [addContactError]: () => false,
+  [removeContactRequest]: () => true,
+  [removeContactSuccess]: () => false,
+  [removeContactError]: () => false,
+  [fetchContactsRequest]: () => true,
+  [fetchContactsSuccess]: () => false,
+  [fetchContactsError]: () => false,
+});
 
 function doesExist(state, payload) {
-  const doesExist = state.items.some(item => item.name === payload.name);
+  const doesExist = state.some(item => item.name === payload.name);
 
   if (doesExist) {
     alert(`${payload.name} is already in contacts.`);
   } else {
-    return {
-      ...state,
-      items: [...state.items, payload],
-    };
+    return [...state, payload];
   }
 }
 
-const rootReducer = combineReducers({
-  contacts: contactsReducer,
+const contactsReducer = combineReducers({
+  items: itemsReducer,
+  filter: filterReducer,
 });
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const rootReducer = combineReducers({
+  contacts: contactsReducer,
+  loading,
+});
 
 const middleware = [
   ...getDefaultMiddleware({
@@ -81,11 +101,11 @@ const middleware = [
 ];
 
 const store = configureStore({
-  reducer: persistedReducer,
+  reducer: rootReducer,
   devTools: process.env.NODE_ENV === 'development',
   middleware,
 });
 
 const persistor = persistStore(store);
 
-export { store, persistor };
+export default store;

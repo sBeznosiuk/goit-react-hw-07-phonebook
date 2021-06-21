@@ -13,10 +13,8 @@ Filter.propTypes = {
   onFilter: PropTypes.func,
 };
 
-const mapStateToProps = () => ({});
-
 const mapDispatchToProps = dispatch => ({
   onFilter: e => dispatch(filterContacts(e.target.value)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Filter);
+export default connect(null, mapDispatchToProps)(Filter);

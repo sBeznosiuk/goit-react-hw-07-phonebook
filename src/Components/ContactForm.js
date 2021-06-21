@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { StyledForm } from './styles';
 import PropTypes from 'prop-types'; // ES6
 import { connect } from 'react-redux';
-import { addContact } from '../redux/actions';
+import { addContact } from '../redux/operations';
 
 class Form extends Component {
   static propTypes = {
@@ -18,7 +17,7 @@ class Form extends Component {
 
   onHandleChange = e => {
     const { value, name } = e.target;
-    this.setState({ [name]: value, id: uuidv4() });
+    this.setState({ [name]: value });
   };
 
   onHandleSubmit = e => {
@@ -69,45 +68,10 @@ class Form extends Component {
   }
 }
 
-// function Form({ onAddContact, onInput }) {
-//   return (
-//     <StyledForm action="submit" onSubmit={onAddContact}>
-//       <label htmlFor="name">
-//         <strong>Name: </strong>
-//         <input
-//           id="name-input"
-//           type="text"
-//           name="name"
-//           pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-//           title="Имя может состоять только из букв, апострофа, тире и пробелов. Например Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan и т. п."
-//           placeholder="text only"
-//           onChange={onInput}
-//           required
-//         />
-//       </label>
-//       <label htmlFor="number">
-//         <strong>Number: </strong>
-//         <input
-//           id="tel-input"
-//           type="tel"
-//           name="number"
-//           pattern="^[ 0-9]+$"
-//           onChange={onInput}
-//           placeholder="numbers only"
-//           required
-//         />
-//       </label>
-//       <button type="submit">Add contact</button>
-//     </StyledForm>
-//   );
-// }
-
 const mapDispatchToProps = dispatch => {
   return {
     onAddContact: contact => dispatch(addContact(contact)),
   };
 };
 
-const mapStateToProps = () => ({});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Form);
+export default connect(null, mapDispatchToProps)(Form);
